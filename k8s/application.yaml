@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: callback-app
+  namespace: argocd  # или где установлен Argo CD
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/yourusername/your-repo.git'
+    path: k8s
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
