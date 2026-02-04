@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: callback-app
+  namespace: default
+spec:
+  selector:
+    app: callback-app
+  ports:
+  - port: 80
+    targetPort: 8080
